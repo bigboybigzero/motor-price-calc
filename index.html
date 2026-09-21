@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f6f9">
+<title>คำนวณราคาขาย อะไหล่มอไซค์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Bai+Jamjuree:wght@600;700&display=swap">
+<style>
+:root{
+  --ink:30 41 59; --muted:88 97 116; --faint:136 144 160;
+  --line:26 32 50; --surface:244 246 249; --card:255 255 255; --field:255 255 255; --accent:71 85 105;
+  --btn:30 41 59; --btn-ink:255 255 255;
+  --good:15 118 110; --bad:185 38 30; --warn:146 102 11;
+  --shopee:238 77 45; --tiktok:30 41 59;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:226 232 240; --muted:165 175 192; --faint:120 130 148;
+    --line:200 210 230; --surface:15 19 27; --card:24 30 41; --field:31 38 51; --accent:148 163 184;
+    --btn:226 232 240; --btn-ink:15 19 27;
+    --good:52 211 153; --bad:248 113 113; --warn:250 204 21;
+    --shopee:251 113 84; --tiktok:226 232 240;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:226 232 240; --muted:165 175 192; --faint:120 130 148;
+  --line:200 210 230; --surface:15 19 27; --card:24 30 41; --field:31 38 51; --accent:148 163 184;
+  --btn:226 232 240; --btn-ink:15 19 27;
+  --good:52 211 153; --bad:248 113 113; --warn:250 204 21;
+  --shopee:251 113 84; --tiktok:226 232 240;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Anuphan",system-ui,-apple-system,"Sukhumvit Set",sans-serif;color:rgb(var(--ink));background:rgb(var(--surface));line-height:1.5;font-size:17px;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;color:inherit;font-size:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid rgb(var(--accent));outline-offset:2px}
+.page{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:18px 48px;display:flex;flex-direction:column;gap:16px}
+h1{font-family:"Bai Jamjuree","Anuphan",sans-serif;font-size:24px;font-weight:700;line-height:1.25}
+.sub{color:rgb(var(--muted));font-size:15px;margin-top:2px}
+.card{background:rgb(var(--card));border:1px solid rgb(var(--line)/.1);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.step{font-size:14px;font-weight:700;color:rgb(var(--muted));letter-spacing:.02em}
+.fg{display:flex;flex-direction:column;gap:6px}
+label{font-size:16px;font-weight:600}
+.help{font-size:13.5px;color:rgb(var(--faint));font-weight:400}
+.field{position:relative}
+.field .u{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:rgb(var(--faint));pointer-events:none;font-size:16px}
+input,select{width:100%;min-height:56px;border:1.5px solid rgb(var(--line)/.2);border-radius:14px;padding:12px 14px;background:rgb(var(--field))}
+.field input{padding-right:56px;text-align:right;font-family:"Bai Jamjuree","Anuphan",sans-serif;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+input:focus,select:focus{outline:none;border-color:rgb(var(--accent));box-shadow:0 0 0 4px rgb(var(--accent)/.18)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{min-height:58px;width:100%;border-radius:16px;border:none;background:rgb(var(--btn));color:rgb(var(--btn-ink));font-size:18px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.5}
+.btn2{min-height:48px;padding:10px 16px;border-radius:14px;border:1.5px solid rgb(var(--line)/.2);background:rgb(var(--field));font-weight:600;cursor:pointer}
+.msg{font-size:15px;min-height:22px;text-align:center}
+.msg.ok{color:rgb(var(--good))}.msg.err{color:rgb(var(--bad))}
+
+.res{display:flex;flex-direction:column;gap:12px}
+.pf{background:rgb(var(--card));border:1px solid rgb(var(--line)/.1);border-radius:18px;overflow:hidden}
+.pf-h{display:flex;align-items:center;gap:10px;padding:14px 18px 0}
+.pf-h b{font-size:19px}
+.dot{width:12px;height:12px;border-radius:99px;flex:none}
+.dot.shopee{background:rgb(var(--shopee))}.dot.tiktok{background:rgb(var(--tiktok))}
+.tag{margin-left:auto;font-size:13.5px;font-weight:700;padding:3px 12px;border-radius:99px;border:1.5px solid}
+.tag.good{color:rgb(var(--good));border-color:rgb(var(--good)/.45);background:rgb(var(--good)/.08)}
+.tag.warn{color:rgb(var(--warn));border-color:rgb(var(--warn)/.5);background:rgb(var(--warn)/.08)}
+.tag.bad{color:rgb(var(--bad));border-color:rgb(var(--bad)/.45);background:rgb(var(--bad)/.08)}
+.big2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 18px 14px}
+.big2 .t{font-size:14.5px;color:rgb(var(--muted))}
+.big2 .v{font-family:"Bai Jamjuree","Anuphan",sans-serif;font-size:30px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.big2 .s{font-size:13.5px;color:rgb(var(--faint))}
+.pos{color:rgb(var(--good))}.neg{color:rgb(var(--bad))}
+.advice{margin:0 18px 14px;padding:10px 14px;border-radius:12px;background:rgb(var(--line)/.05);font-size:15px}
+.advice b{font-variant-numeric:tabular-nums}
+.advice button{margin-top:8px}
+details.more>summary{list-style:none;cursor:pointer;padding:12px 18px;border-top:1px solid rgb(var(--line)/.08);font-size:15.5px;font-weight:600;color:rgb(var(--muted));display:flex;align-items:center;gap:8px;min-height:50px}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg);transition:transform .15s}
+details.more[open]>summary::after{transform:rotate(-135deg)}
+table.bd{width:100%;border-collapse:collapse;font-size:15.5px}
+table.bd td{padding:8px 18px;border-top:1px solid rgb(var(--line)/.06)}
+table.bd td.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+table.bd small{display:block;font-size:12.5px;color:rgb(var(--faint))}
+table.bd tr.sum td{font-weight:700;background:rgb(var(--line)/.05)}
+table.bd tr.cut td.r{color:rgb(var(--bad))}
+table.bd tr.grp td{font-size:13.5px;font-weight:700;color:rgb(var(--muted));padding-top:12px}
+.bd-h{padding:12px 18px 6px;border-top:1px solid rgb(var(--line)/.08);font-size:15.5px;font-weight:700}
+
+.list{display:flex;flex-direction:column;gap:10px}
+.item{border:1px solid rgb(var(--line)/.12);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.item.cur{border-color:rgb(var(--accent));box-shadow:0 0 0 2px rgb(var(--accent)/.2)}
+.item .nm{font-weight:700;font-size:17px}
+.item .meta{font-size:14px;color:rgb(var(--muted));font-variant-numeric:tabular-nums}
+.item .nums{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:14.5px;font-variant-numeric:tabular-nums}
+.item .nums b{font-size:17px}
+.item .acts{display:flex;gap:8px;margin-top:4px}
+.item .acts button{flex:1}
+.del{color:rgb(var(--bad))}
+.empty{text-align:center;color:rgb(var(--faint));padding:12px;font-size:15px}
+.settings summary{list-style:none;cursor:pointer;font-weight:700;display:flex;align-items:center;min-height:44px}
+.settings summary::-webkit-details-marker{display:none}
+.settings summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg)}
+.settings[open] summary::after{transform:rotate(-135deg)}
+.settings .body{display:flex;flex-direction:column;gap:14px;padding-top:12px}
+table.rt{width:100%;border-collapse:collapse;font-size:15px}
+table.rt td{padding:6px 2px;border-top:1px solid rgb(var(--line)/.06);vertical-align:middle}
+table.rt input{min-height:44px;padding:8px 10px;text-align:right;font-size:17px}
+table.rt input[type=checkbox]{width:24px;height:24px;min-height:0;accent-color:rgb(var(--btn))}
+table.rt .w{width:92px}
+.note{font-size:13.5px;color:rgb(var(--muted));line-height:1.55}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <h1>คำนวณราคาขาย</h1>
+    <p class="sub">อะไหล่มอเตอร์ไซค์ · Shopee และ TikTok · ขายแล้วเงินเข้าเท่าไหร่ กำไรเท่าไหร่</p>
+  </header>
+
+  <section class="card" aria-label="กรอกข้อมูลสินค้า">
+    <div class="step">กรอกข้อมูลสินค้า</div>
+    <div class="fg">
+      <label for="pname">ชื่อสินค้า</label>
+      <input id="pname" type="text" placeholder="เช่น ผ้าเบรกหน้า Wave 110i" autocomplete="off" enterkeyhint="next">
+    </div>
+    <div class="fg">
+      <label for="cat">หมวดสินค้า <span class="help">(มีผลกับค่าที่ Shopee หัก)</span></label>
+      <select id="cat"></select>
+    </div>
+    <div class="row2">
+      <div class="fg"><label for="cost">ต้นทุน</label>
+        <div class="field"><input id="cost" type="text" inputmode="decimal" autocomplete="off"><span class="u">บาท</span></div></div>
+      <div class="fg"><label for="box">ค่ากล่อง</label>
+        <div class="field"><input id="box" type="text" inputmode="decimal" autocomplete="off"><span class="u">บาท</span></div></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label for="price">ราคาขาย</label>
+        <div class="field"><input id="price" type="text" inputmode="decimal" autocomplete="off"><span class="u">บาท</span></div></div>
+      <div class="fg"><label for="bship">ค่าส่ง <span class="help">ที่ลูกค้าจ่าย</span></label>
+        <div class="field"><input id="bship" type="text" inputmode="decimal" autocomplete="off"><span class="u">บาท</span></div></div>
+    </div>
+  </section>
+
+  <section class="res" id="res" aria-live="polite"></section>
+
+  <button class="btn" id="saveBtn" type="button">บันทึกสินค้านี้</button>
+  <div class="msg" id="msg" role="status"></div>
+
+  <section class="card" aria-label="สินค้าที่บันทึกไว้">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="step">สินค้าที่บันทึกไว้</div>
+      <button class="btn2" id="newBtn" type="button" style="margin-left:auto">+ สินค้าใหม่</button>
+    </div>
+    <input id="q" type="search" placeholder="ค้นหาชื่อสินค้า" autocomplete="off">
+    <div class="list" id="list"></div>
+    <p class="note">รายการเก็บไว้ในมือถือเครื่องนี้ ถ้าล้างข้อมูลเบราว์เซอร์หรือเปิดในโหมดไม่ระบุตัวตน รายการจะหาย</p>
+  </section>
+
+  <details class="card settings" id="settings">
+    <summary>ตั้งค่าเพิ่มเติม (ไม่ต้องแก้ก็ได้)</summary>
+    <div class="body">
+      <div class="fg"><label for="tier">ประเภทร้าน Shopee</label>
+        <select id="tier">
+          <option value="normal">ร้านค้าทั่วไป</option>
+          <option value="small">ผู้ขายรายเล็ก (ขายไม่เกิน 10,000 บาทใน 30 วัน)</option>
+        </select></div>
+      <div class="row2">
+        <div class="fg"><label for="ship">ค่าขนส่งจีน-ไทย</label>
+          <div class="field"><input id="ship" type="text" inputmode="decimal"><span class="u">บาท</span></div></div>
+        <div class="fg"><label for="ads">ค่าแอด</label>
+          <div class="field"><input id="ads" type="text" inputmode="decimal"><span class="u">%</span></div></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><label for="aff">Affiliate</label>
+          <div class="field"><input id="aff" type="text" inputmode="decimal"><span class="u">%</span></div></div>
+        <div class="fg"><label for="target">อยากได้กำไร</label>
+          <div class="field"><input id="target" type="text" inputmode="decimal"><span class="u">%</span></div></div>
+      </div>
+      <div class="fg"><label for="vat">VAT 7%</label>
+        <select id="vat">
+          <option value="none">ร้านไม่ได้จด VAT</option>
+          <option value="net">จด VAT (หักภาษีซื้อจากค่าธรรมเนียมได้)</option>
+          <option value="full">จด VAT (หัก 7% ของราคาขายเต็ม)</option>
+        </select></div>
+      <div class="fg"><label>ค่าธรรมเนียม TikTok Shop</label>
+        <table class="rt" id="ttRates"></table>
+        <p class="note">อัตรา TikTok เป็นค่าประมาณจากประกาศปี 2569 ยังไม่ได้เทียบกับบิลจริง ถ้าบิลของร้านต่างไป แก้ตัวเลขตรงนี้ได้</p>
+      </div>
+      <div class="fg"><label for="infra">ค่าโครงสร้างพื้นฐาน Shopee ต่อออเดอร์</label>
+        <div class="field"><input id="infra" type="text" inputmode="decimal"><span class="u">บาท</span></div>
+        <p class="note">บิลที่ตรวจแล้วไม่มีรายการนี้ ถ้าบิลของร้านมี ให้ใส่ 1.07</p></div>
+      <button class="btn2" id="resetBtn" type="button">คืนค่าตั้งต้นทั้งหมด</button>
+      <p class="note">Shopee คิดตามตารางค่าธรรมเนียมทางการสำหรับร้าน Non-Mall (มีผล 4 ส.ค. 2569): ค่าคอมมิชชั่นตามหมวด คิดจากราคาสินค้า ·
+        ค่าธุรกรรม 3.21% ของราคา + ค่าส่ง · ปัดแต่ละรายการเป็นบาทเต็ม ตรวจกับบิลจริงแล้วตรงกัน</p>
+    </div>
+  </details>
+</div>
+
+<script>
+const SHOPEE_CATS = [
+  { k:'moto-parts',  n:'อะไหล่มอเตอร์ไซค์', r:16.05, s:14.45 },
+  { k:'moto-acc',    n:'ของแต่งมอเตอร์ไซค์', r:16.05, s:14.45 },
+  { k:'moto-helmet', n:'หมวกกันน็อก', r:16.05, s:14.45 },
+  { k:'moto-bike',   n:'รถมอเตอร์ไซค์ (ทั้งคัน)', r:10.17, s:8.56 },
+  { k:'car-parts',   n:'อะไหล่รถยนต์', r:13.38, s:11.77 },
+  { k:'car-tools',   n:'เครื่องมือซ่อมรถ', r:15.52, s:13.91 },
+  { k:'car-care',    n:'น้ำยาดูแลรถ / ของแต่งรถยนต์', r:16.05, s:14.45 },
+  { k:'lube',        n:'น้ำมันเครื่อง จาระบี น้ำยาหล่อเย็น', r:13.38, s:11.77 },
+  { k:'oil',         n:'น้ำมัน (หมวดน้ำมัน)', r:11.77, s:10.17 },
+];
+const DEF_TT = [
+  { name:'ค่าคอมมิชชั่น', rate:9.63, on:true },
+  { name:'ค่าธรรมเนียมคำสั่งซื้อ', rate:3.21, on:true, gross:true },
+  { name:'โปรแกรม Cashback', rate:5.35, on:true },
+  { name:'โปรแกรม CBD', rate:3.21, on:true },
+];
+const DEF_SET = { v:1, tier:'normal', ship:'0', ads:'0', aff:'0', target:'20', vat:'none', infra:'0', tt:DEF_TT, ttFixed:1.07 };
+const DEF_P = { id:null, name:'', cat:'moto-parts', cost:'', box:'', price:'', bship:'' };
+
+const clone = o => JSON.parse(JSON.stringify(o));
+const LS = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+             set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } } };
+let SET = Object.assign(clone(DEF_SET), LS.get('cp-set') || {});
+let P = Object.assign(clone(DEF_P), LS.get('cp-draft') || { cost:'100', box:'5', price:'299', bship:'0' });
+let SAVED = LS.get('cp-items') || [];
+
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(String(v ?? '').replace(/,/g,'')); return isFinite(n) ? n : 0; };
+const fmt = n => (Math.round(n*100)/100).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt0 = n => Math.ceil(n).toLocaleString('th-TH');
+const pct = n => isFinite(n) ? (Math.round(n*10)/10).toLocaleString('th-TH',{maximumFractionDigits:1}) + '%' : '–';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const catOf = p => SHOPEE_CATS.find(c => c.k === p.cat) || SHOPEE_CATS[0];
+
+// ค่าที่แพลตฟอร์มหัก
+function shopeeFees(p, price){
+  const c = catOf(p), rate = SET.tier === 'small' ? c.s : c.r;
+  const comm = Math.round(price * rate / 100 + 1e-9);
+  const pay = Math.round((price + num(p.bship)) * 3.21 / 100 + 1e-9);
+  const rows = [{ n:'ค่าคอมมิชชั่น', d:rate + '% ของราคาสินค้า', a:comm }, { n:'ค่าธุรกรรมการชำระเงิน', d:'3.21% ของราคา + ค่าส่ง', a:pay }];
+  if (num(SET.infra) > 0 && price > 0) rows.push({ n:'ค่าโครงสร้างพื้นฐาน', d:'ต่อออเดอร์', a:num(SET.infra) });
+  return rows;
+}
+function tiktokFees(p, price){
+  const rows = SET.tt.filter(f => f.on).map(f => ({ n:f.name, d:num(f.rate) + '%' + (f.gross ? ' ของราคา + ค่าส่ง' : ''),
+    a:(f.gross ? price + num(p.bship) : price) * num(f.rate) / 100 }));
+  if (price > 0 && num(SET.ttFixed) > 0) rows.push({ n:'ค่าโครงสร้างพื้นฐาน', d:'ต่อออเดอร์', a:num(SET.ttFixed) });
+  return rows;
+}
+function calc(which, p, price){
+  const rows = which === 'shopee' ? shopeeFees(p, price) : tiktokFees(p, price);
+  const aff = price * num(SET.aff) / 100;
+  if (aff) rows.push({ n:'Affiliate', d:num(SET.aff) + '%', a:aff });
+  const fees = rows.reduce((s,r) => s + r.a, 0);
+  const payout = price - fees;
+  const ads = price * num(SET.ads) / 100;
+  let vat = 0;
+  if (SET.vat === 'full') vat = price * 7 / 107;
+  if (SET.vat === 'net') vat = price * 7 / 107 - (fees + ads) * 7 / 107;
+  const cost = num(p.cost), box = num(p.box), ship = num(SET.ship);
+  const profit = payout - cost - box - ship - ads - vat;
+  return { rows, fees, payout, ads, vat, cost, box, ship, profit, margin: price > 0 ? profit / price * 100 : NaN };
+}
+function solve(which, p, t){
+  const ok = x => calc(which, p, x).profit >= x * t / 100 - 1e-9;
+  let hi = Math.max(10, (num(p.cost) + num(p.box) + num(SET.ship)) * 2), n = 0;
+  while (!ok(hi) && n++ < 30) hi *= 2;
+  if (!ok(hi)) return NaN;
+  let lo = 0; for (let i = 0; i < 50; i++){ const m = (lo + hi) / 2; ok(m) ? hi = m : lo = m; }
+  return Math.ceil(hi);
+}
+
+// ---------- แสดงผล ----------
+function renderRes(){
+  const price = num(P.price), T = num(SET.target);
+  const hasInput = price > 0;
+  $('res').innerHTML = [['shopee','Shopee'],['tiktok','TikTok Shop']].map(([k, label]) => {
+    const r = calc(k, P, price), good = solve(k, P, T);
+    const tag = !hasInput ? '' : r.profit < 0 ? '<span class="tag bad">ขาดทุน</span>'
+      : r.margin < T ? '<span class="tag warn">กำไรน้อย</span>' : '<span class="tag good">กำไรดี</span>';
+    return `<article class="pf">
+      <div class="pf-h"><span class="dot ${k}"></span><b>${label}</b>${tag}</div>
+      <div class="big2">
+        <div><div class="t">เงินเข้าบัญชี</div><div class="v">${hasInput ? fmt(r.payout) : '–'}</div><div class="s">โดนหัก ${fmt(r.fees)} บาท</div></div>
+        <div><div class="t">กำไรจริง</div><div class="v ${r.profit < 0 ? 'neg' : 'pos'}">${hasInput ? fmt(r.profit) : '–'}</div><div class="s">${hasInput ? 'คิดเป็น ' + pct(r.margin) : 'กรอกราคาขาย'}</div></div>
+      </div>
+      ${isFinite(good) && num(P.cost) > 0 ? `<div class="advice">อยากได้กำไร ${esc(SET.target)}% ควรตั้งราคา <b>${fmt0(good)} บาท</b>
+        ${good !== price ? `<br><button class="btn2" data-use="${good}" type="button">ใช้ราคานี้</button>` : ''}</div>` : ''}
+      <div class="bd-h">โดนหักอะไรบ้าง</div>
+        <table class="bd">
+          <tr><td>ราคาขาย</td><td class="r">${fmt(price)}</td></tr>
+          ${r.rows.map(x => `<tr class="cut"><td>${esc(x.n)}<small>${esc(x.d)}</small></td><td class="r">-${fmt(x.a)}</td></tr>`).join('')}
+          <tr><td><b>รวม ${label} หัก</b></td><td class="r"><b class="neg">-${fmt(r.fees)}</b></td></tr>
+          <tr class="sum"><td>เงินเข้าบัญชี</td><td class="r">${fmt(r.payout)}</td></tr>
+          <tr class="grp"><td colspan="2">หักต้นทุนร้าน</td></tr>
+          <tr><td>ต้นทุน</td><td class="r">-${fmt(r.cost)}</td></tr>
+          <tr><td>ค่ากล่อง</td><td class="r">-${fmt(r.box)}</td></tr>
+          ${r.ship ? `<tr><td>ค่าขนส่งจีน-ไทย</td><td class="r">-${fmt(r.ship)}</td></tr>` : ''}
+          ${r.ads ? `<tr><td>ค่าแอด</td><td class="r">-${fmt(r.ads)}</td></tr>` : ''}
+          ${SET.vat !== 'none' ? `<tr><td>VAT ที่ต้องจ่าย</td><td class="r">${r.vat < 0 ? '+' : '-'}${fmt(Math.abs(r.vat))}</td></tr>` : ''}
+          <tr class="sum"><td>กำไรจริง</td><td class="r ${r.profit < 0 ? 'neg' : 'pos'}">${fmt(r.profit)}</td></tr>
+        </table>
+    </article>`;
+  }).join('');
+}
+
+function renderList(){
+  const q = $('q').value.trim().toLowerCase();
+  const items = SAVED.filter(s => !q || String(s.name).toLowerCase().includes(q)).sort((a,b) => (b.t||0) - (a.t||0));
+  $('list').innerHTML = items.length ? items.map(s => {
+    const a = calc('shopee', s, num(s.price)), b = calc('tiktok', s, num(s.price));
+    return `<div class="item ${s.id === P.id ? 'cur' : ''}">
+      <div class="nm">${esc(s.name)}</div>
+      <div class="meta">${esc(catOf(s).n)} · ต้นทุน ${fmt(num(s.cost))} · กล่อง ${fmt(num(s.box))} · ขาย ${fmt(num(s.price))}</div>
+      <div class="nums">
+        <div>Shopee กำไร<br><b class="${a.profit < 0 ? 'neg' : 'pos'}">${fmt(a.profit)}</b></div>
+        <div>TikTok กำไร<br><b class="${b.profit < 0 ? 'neg' : 'pos'}">${fmt(b.profit)}</b></div>
+      </div>
+      <div class="acts"><button class="btn2" data-open="${esc(s.id)}" type="button">เปิดดู / แก้ไข</button>
+        <button class="btn2 del" data-del="${esc(s.id)}" type="button">ลบ</button></div>
+    </div>`;
+  }).join('') : `<div class="empty">${SAVED.length ? 'ไม่เจอสินค้าที่ค้นหา' : 'ยังไม่มีสินค้า กรอกข้อมูลด้านบนแล้วกด “บันทึกสินค้านี้”'}</div>`;
+}
+
+function renderTT(){
+  $('ttRates').innerHTML = SET.tt.map((f,i) => `<tr>
+    <td style="width:34px"><input type="checkbox" id="tt-on-${i}" data-i="${i}" data-f="on" ${f.on ? 'checked' : ''}></td>
+    <td><label for="tt-on-${i}" style="font-weight:500;font-size:15px">${esc(f.name)}</label></td>
+    <td class="w"><input id="tt-r-${i}" type="text" inputmode="decimal" data-i="${i}" data-f="rate" value="${esc(f.rate)}"></td><td style="width:22px">%</td></tr>`).join('');
+}
+
+// ---------- ช่องกรอก ----------
+const PF = ['pname','cat','cost','box','price','bship'];
+const SF = ['tier','ship','ads','aff','target','vat','infra'];
+const pk = id => id === 'pname' ? 'name' : id;
+function fill(){
+  PF.forEach(id => $(id).value = P[pk(id)] ?? '');
+  SF.forEach(id => $(id).value = SET[id] ?? '');
+}
+function renderAll(){ renderRes(); renderList(); }
+PF.forEach(id => {
+  $(id).addEventListener('input', () => { P[pk(id)] = $(id).value; LS.set('cp-draft', P); $('msg').textContent = ''; renderRes(); });
+  if (!['pname','cat'].includes(id)) $(id).addEventListener('focus', e => setTimeout(() => e.target.select(), 0));
+});
+SF.forEach(id => {
+  $(id).addEventListener('input', () => { SET[id] = $(id).value; LS.set('cp-set', SET); renderAll(); });
+  if ($(id).tagName === 'INPUT') $(id).addEventListener('focus', e => setTimeout(() => e.target.select(), 0));
+});
+$('ttRates').addEventListener('input', e => {
+  const f = SET.tt[+e.target.dataset.i]; if (!f) return;
+  f[e.target.dataset.f] = e.target.dataset.f === 'on' ? e.target.checked : e.target.value;
+  LS.set('cp-set', SET); renderAll();
+});
+$('resetBtn').addEventListener('click', () => {
+  if (!confirm('คืนค่าตั้งต้นทั้งหมด? (สินค้าที่บันทึกไว้ไม่หาย)')) return;
+  SET = clone(DEF_SET); LS.set('cp-set', SET); fill(); renderTT(); renderAll();
+});
+$('res').addEventListener('click', e => {
+  const b = e.target.closest('[data-use]'); if (!b) return;
+  P.price = b.dataset.use; $('price').value = P.price; LS.set('cp-draft', P); renderRes();
+});
+
+// ---------- บันทึก ----------
+function say(t, cls){ $('msg').textContent = t; $('msg').className = 'msg' + (cls ? ' ' + cls : ''); }
+$('saveBtn').addEventListener('click', () => {
+  const name = String(P.name || '').trim();
+  if (!name) { say('ใส่ชื่อสินค้าก่อนนะ', 'err'); $('pname').focus(); return; }
+  if (num(P.price) <= 0) { say('ใส่ราคาขายก่อนนะ', 'err'); $('price').focus(); return; }
+  const same = SAVED.find(s => s.id === P.id) || SAVED.find(s => String(s.name).trim() === name);
+  const rec = { id: same ? same.id : 'p' + Date.now().toString(36), name, cat:P.cat, cost:String(P.cost), box:String(P.box),
+                price:String(P.price), bship:String(P.bship), t:Date.now() };
+  SAVED = SAVED.filter(s => s.id !== rec.id).concat(rec);
+  if (!LS.set('cp-items', SAVED)) { say('มือถือไม่ยอมให้บันทึก ลองปิดโหมดไม่ระบุตัวตน', 'err'); return; }
+  P.id = rec.id; LS.set('cp-draft', P);
+  say((same ? 'แก้ไข “' : 'บันทึก “') + name + '” แล้ว', 'ok');
+  renderList();
+});
+$('list').addEventListener('click', e => {
+  const o = e.target.closest('[data-open]'), d = e.target.closest('[data-del]');
+  if (o) {
+    const s = SAVED.find(x => x.id === o.dataset.open); if (!s) return;
+    P = Object.assign(clone(DEF_P), s); LS.set('cp-draft', P); fill(); renderAll();
+    say('เปิด “' + s.name + '” แล้ว แก้ตัวเลขแล้วกดบันทึกอีกครั้ง');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  if (d) {
+    const s = SAVED.find(x => x.id === d.dataset.del); if (!s) return;
+    if (!confirm('ลบ “' + s.name + '” ?')) return;
+    SAVED = SAVED.filter(x => x.id !== s.id); LS.set('cp-items', SAVED);
+    if (P.id === s.id) P.id = null;
+    renderList();
+  }
+});
+$('q').addEventListener('input', renderList);
+$('newBtn').addEventListener('click', () => {
+  P = Object.assign(clone(DEF_P), { cat:P.cat }); LS.set('cp-draft', P); fill(); renderAll(); say('');
+  window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => $('pname').focus(), 300);
+});
+
+$('cat').innerHTML = SHOPEE_CATS.map(c => `<option value="${c.k}">${esc(c.n)}</option>`).join('');
+fill(); renderTT(); renderAll();
+</script>
+</body>
+</html>
