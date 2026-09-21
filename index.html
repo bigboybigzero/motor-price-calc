@@ -51,7 +51,9 @@ label{font-size:16px;font-weight:600}
 input,select{width:100%;min-height:56px;border:1.5px solid rgb(var(--line)/.2);border-radius:14px;padding:12px 14px;background:rgb(var(--field))}
 .field input{padding-right:56px;text-align:right;font-family:"Bai Jamjuree","Anuphan",sans-serif;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
 input:focus,select:focus{outline:none;border-color:rgb(var(--accent));box-shadow:0 0 0 4px rgb(var(--accent)/.18)}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.page>*,.card>*,.fg>*{min-width:0}
+select{max-width:100%;text-overflow:ellipsis}
 .btn{min-height:58px;width:100%;border-radius:16px;border:none;background:rgb(var(--btn));color:rgb(var(--btn-ink));font-size:18px;font-weight:700;cursor:pointer}
 .btn:disabled{opacity:.5}
 .btn2{min-height:48px;padding:10px 16px;border-radius:14px;border:1.5px solid rgb(var(--line)/.2);background:rgb(var(--field));font-weight:600;cursor:pointer}
@@ -119,7 +121,7 @@ table.rt .w{width:92px}
 <div class="page">
   <header>
     <h1>คำนวณราคาขาย</h1>
-    <p class="sub">อะไหล่มอเตอร์ไซค์ · Shopee และ TikTok · ขายแล้วเงินเข้าเท่าไหร่ กำไรเท่าไหร่</p>
+    <p class="sub">อะไหล่มอเตอร์ไซค์ · Shopee และ TikTok<br>ขายแล้วเงินเข้าเท่าไหร่ กำไรเท่าไหร่</p>
   </header>
 
   <section class="card" aria-label="กรอกข้อมูลสินค้า">
@@ -144,6 +146,19 @@ table.rt .w{width:92px}
       <div class="fg"><label for="bship">ค่าส่ง <span class="help">ที่ลูกค้าจ่าย</span></label>
         <div class="field"><input id="bship" type="text" inputmode="decimal" autocomplete="off"><span class="u">บาท</span></div></div>
     </div>
+    <div class="step" style="margin-top:4px">ค่าการตลาด และภาษี <span class="help">(ไม่มีใส่ 0)</span></div>
+    <div class="row2">
+      <div class="fg"><label for="ads">ค่าแอด <span class="help">% ของยอดขาย</span></label>
+        <div class="field"><input id="ads" type="text" inputmode="decimal" autocomplete="off"><span class="u">%</span></div></div>
+      <div class="fg"><label for="aff">ค่านายหน้า <span class="help">Affiliate</span></label>
+        <div class="field"><input id="aff" type="text" inputmode="decimal" autocomplete="off"><span class="u">%</span></div></div>
+    </div>
+    <div class="fg"><label for="vat">VAT 7%</label>
+      <select id="vat">
+        <option value="none">ร้านไม่ได้จด VAT</option>
+        <option value="net">จด VAT (หักภาษีซื้อได้)</option>
+        <option value="full">จด VAT (หัก 7% เต็ม)</option>
+      </select></div>
   </section>
 
   <section class="res" id="res" aria-live="polite"></section>
@@ -172,21 +187,9 @@ table.rt .w{width:92px}
       <div class="row2">
         <div class="fg"><label for="ship">ค่าขนส่งจีน-ไทย</label>
           <div class="field"><input id="ship" type="text" inputmode="decimal"><span class="u">บาท</span></div></div>
-        <div class="fg"><label for="ads">ค่าแอด</label>
-          <div class="field"><input id="ads" type="text" inputmode="decimal"><span class="u">%</span></div></div>
-      </div>
-      <div class="row2">
-        <div class="fg"><label for="aff">Affiliate</label>
-          <div class="field"><input id="aff" type="text" inputmode="decimal"><span class="u">%</span></div></div>
         <div class="fg"><label for="target">อยากได้กำไร</label>
           <div class="field"><input id="target" type="text" inputmode="decimal"><span class="u">%</span></div></div>
       </div>
-      <div class="fg"><label for="vat">VAT 7%</label>
-        <select id="vat">
-          <option value="none">ร้านไม่ได้จด VAT</option>
-          <option value="net">จด VAT (หักภาษีซื้อจากค่าธรรมเนียมได้)</option>
-          <option value="full">จด VAT (หัก 7% ของราคาขายเต็ม)</option>
-        </select></div>
       <div class="fg"><label>ค่าธรรมเนียม TikTok Shop</label>
         <table class="rt" id="ttRates"></table>
         <p class="note">อัตรา TikTok เป็นค่าประมาณจากประกาศปี 2569 ยังไม่ได้เทียบกับบิลจริง ถ้าบิลของร้านต่างไป แก้ตัวเลขตรงนี้ได้</p>
@@ -220,7 +223,7 @@ const DEF_TT = [
   { name:'โปรแกรม CBD', rate:3.21, on:true },
 ];
 const DEF_SET = { v:1, tier:'normal', ship:'0', ads:'0', aff:'0', target:'20', vat:'none', infra:'0', tt:DEF_TT, ttFixed:1.07 };
-const DEF_P = { id:null, name:'', cat:'moto-parts', cost:'', box:'', price:'', bship:'' };
+const DEF_P = { id:null, name:'', cat:'moto-parts', cost:'', box:'', price:'', bship:'', ads:'0', aff:'0' };
 
 const clone = o => JSON.parse(JSON.stringify(o));
 const LS = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
@@ -254,17 +257,18 @@ function tiktokFees(p, price){
 }
 function calc(which, p, price){
   const rows = which === 'shopee' ? shopeeFees(p, price) : tiktokFees(p, price);
-  const aff = price * num(SET.aff) / 100;
-  if (aff) rows.push({ n:'Affiliate', d:num(SET.aff) + '%', a:aff });
+  const aff = price * num(p.aff) / 100;
+  rows.push({ n:'ค่านายหน้า (Affiliate)', d:num(p.aff) + '% ของราคาสินค้า', a:aff });
   const fees = rows.reduce((s,r) => s + r.a, 0);
   const payout = price - fees;
-  const ads = price * num(SET.ads) / 100;
+  const ads = price * num(p.ads) / 100;
+  const outVat = price * 7 / 107, inVat = (fees + ads) * 7 / 107;
   let vat = 0;
-  if (SET.vat === 'full') vat = price * 7 / 107;
-  if (SET.vat === 'net') vat = price * 7 / 107 - (fees + ads) * 7 / 107;
+  if (SET.vat === 'full') vat = outVat;
+  if (SET.vat === 'net') vat = outVat - inVat;
   const cost = num(p.cost), box = num(p.box), ship = num(SET.ship);
   const profit = payout - cost - box - ship - ads - vat;
-  return { rows, fees, payout, ads, vat, cost, box, ship, profit, margin: price > 0 ? profit / price * 100 : NaN };
+  return { rows, fees, payout, ads, vat, outVat, inVat, cost, box, ship, profit, margin: price > 0 ? profit / price * 100 : NaN };
 }
 function solve(which, p, t){
   const ok = x => calc(which, p, x).profit >= x * t / 100 - 1e-9;
@@ -297,12 +301,15 @@ function renderRes(){
           ${r.rows.map(x => `<tr class="cut"><td>${esc(x.n)}<small>${esc(x.d)}</small></td><td class="r">-${fmt(x.a)}</td></tr>`).join('')}
           <tr><td><b>รวม ${label} หัก</b></td><td class="r"><b class="neg">-${fmt(r.fees)}</b></td></tr>
           <tr class="sum"><td>เงินเข้าบัญชี</td><td class="r">${fmt(r.payout)}</td></tr>
-          <tr class="grp"><td colspan="2">หักต้นทุนร้าน</td></tr>
+          <tr class="grp"><td colspan="2">หักต้นทุน ค่าการตลาด และภาษี</td></tr>
           <tr><td>ต้นทุน</td><td class="r">-${fmt(r.cost)}</td></tr>
           <tr><td>ค่ากล่อง</td><td class="r">-${fmt(r.box)}</td></tr>
           ${r.ship ? `<tr><td>ค่าขนส่งจีน-ไทย</td><td class="r">-${fmt(r.ship)}</td></tr>` : ''}
-          ${r.ads ? `<tr><td>ค่าแอด</td><td class="r">-${fmt(r.ads)}</td></tr>` : ''}
-          ${SET.vat !== 'none' ? `<tr><td>VAT ที่ต้องจ่าย</td><td class="r">${r.vat < 0 ? '+' : '-'}${fmt(Math.abs(r.vat))}</td></tr>` : ''}
+          <tr><td>ค่าแอด<small>${num(P.ads)}% ของราคาขาย</small></td><td class="r">-${fmt(r.ads)}</td></tr>
+          <tr><td>VAT ที่ต้องจ่าย<small>${SET.vat === 'none' ? 'ร้านไม่ได้จด VAT'
+            : SET.vat === 'full' ? '7/107 ของราคาขาย'
+            : 'VAT ขาย ' + fmt(r.outVat) + ' − VAT ในค่าธรรมเนียม/แอด ' + fmt(r.inVat)}</small></td>
+            <td class="r">${r.vat < 0 ? '+' : '-'}${fmt(Math.abs(r.vat))}</td></tr>
           <tr class="sum"><td>กำไรจริง</td><td class="r ${r.profit < 0 ? 'neg' : 'pos'}">${fmt(r.profit)}</td></tr>
         </table>
     </article>`;
@@ -316,7 +323,7 @@ function renderList(){
     const a = calc('shopee', s, num(s.price)), b = calc('tiktok', s, num(s.price));
     return `<div class="item ${s.id === P.id ? 'cur' : ''}">
       <div class="nm">${esc(s.name)}</div>
-      <div class="meta">${esc(catOf(s).n)} · ต้นทุน ${fmt(num(s.cost))} · กล่อง ${fmt(num(s.box))} · ขาย ${fmt(num(s.price))}</div>
+      <div class="meta">${esc(catOf(s).n)} · ต้นทุน ${fmt(num(s.cost))} · กล่อง ${fmt(num(s.box))} · ขาย ${fmt(num(s.price))}${num(s.ads) ? ' · แอด ' + num(s.ads) + '%' : ''}${num(s.aff) ? ' · นายหน้า ' + num(s.aff) + '%' : ''}</div>
       <div class="nums">
         <div>Shopee กำไร<br><b class="${a.profit < 0 ? 'neg' : 'pos'}">${fmt(a.profit)}</b></div>
         <div>TikTok กำไร<br><b class="${b.profit < 0 ? 'neg' : 'pos'}">${fmt(b.profit)}</b></div>
@@ -335,8 +342,8 @@ function renderTT(){
 }
 
 // ---------- ช่องกรอก ----------
-const PF = ['pname','cat','cost','box','price','bship'];
-const SF = ['tier','ship','ads','aff','target','vat','infra'];
+const PF = ['pname','cat','cost','box','price','bship','ads','aff'];
+const SF = ['tier','ship','target','vat','infra'];
 const pk = id => id === 'pname' ? 'name' : id;
 function fill(){
   PF.forEach(id => $(id).value = P[pk(id)] ?? '');
@@ -373,7 +380,7 @@ $('saveBtn').addEventListener('click', () => {
   if (num(P.price) <= 0) { say('ใส่ราคาขายก่อนนะ', 'err'); $('price').focus(); return; }
   const same = SAVED.find(s => s.id === P.id) || SAVED.find(s => String(s.name).trim() === name);
   const rec = { id: same ? same.id : 'p' + Date.now().toString(36), name, cat:P.cat, cost:String(P.cost), box:String(P.box),
-                price:String(P.price), bship:String(P.bship), t:Date.now() };
+                price:String(P.price), bship:String(P.bship), ads:String(P.ads), aff:String(P.aff), t:Date.now() };
   SAVED = SAVED.filter(s => s.id !== rec.id).concat(rec);
   if (!LS.set('cp-items', SAVED)) { say('มือถือไม่ยอมให้บันทึก ลองปิดโหมดไม่ระบุตัวตน', 'err'); return; }
   P.id = rec.id; LS.set('cp-draft', P);
@@ -398,7 +405,7 @@ $('list').addEventListener('click', e => {
 });
 $('q').addEventListener('input', renderList);
 $('newBtn').addEventListener('click', () => {
-  P = Object.assign(clone(DEF_P), { cat:P.cat }); LS.set('cp-draft', P); fill(); renderAll(); say('');
+  P = Object.assign(clone(DEF_P), { cat:P.cat, ads:P.ads, aff:P.aff }); LS.set('cp-draft', P); fill(); renderAll(); say('');
   window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => $('pname').focus(), 300);
 });
 
